@@ -6,6 +6,12 @@
 <title>🎬 IPTV Player</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+/* ===== HIDE CONTROLS IN FULLSCREEN ===== */
+#s2:fullscreen .player-overlay,
+#s2:-webkit-full-screen .player-overlay {
+    display: none !important;
+}
+
 :root {
     --primary: #6366f1;
     --primary-glow: rgba(99, 102, 241, 0.4);
@@ -1138,11 +1144,11 @@ const CONFIG = { osdDuration: 2200, menuAutoClose: 60000, swipeThreshold: 50 };
 const PLAYLIST_LIBRARY = [
     // Brasil
     { name: 'TV Aberta Brasil', url: 'https://iptv-org.github.io/iptv/countries/br.m3u', category: 'brazil', icon: 'fa-tv', desc: 'Canais abertos do Brasil' },
-    { name: 'ESPN Brasil', url: 'https://iptv-org.github.io/iptv/subdivisions/br-sp.m3u', category: 'brazil', icon: 'fa-flag', desc: 'Canais de São Paulo' },
+    { name: 'Weather', url: 'https://iptv-org.github.io/iptv/categories/weather.m3u', category: 'weather', icon: 'fa-cloud', desc: 'Weather' },
     
     // Esportes
-    { name: 'ESPN', url: 'https://iptv-org.github.io/iptv/categories/sports.m3u', category: 'sports', icon: 'fa-futbol', desc: 'Canais esportivos internacionais' },
-    { name: 'Fox Sports', url: 'https://iptv-org.github.io/iptv/categories/sports.m3u', category: 'sports', icon: 'fa-running', desc: 'Esportes ao vivo' },
+    { name: 'Sports', url: 'https://iptv-org.github.io/iptv/categories/sports.m3u', category: 'sports', icon: 'fa-futbol', desc: 'Canais esportivos internacionais' },
+    { name: 'Science', url: 'https://iptv-org.github.io/iptv/categories/science.m3u', category: 'science', icon: 'fa-atom', desc: 'Science' },
     
     // Filmes e Séries
     { name: 'Movies', url: 'https://iptv-org.github.io/iptv/categories/movies.m3u', category: 'movies', icon: 'fa-film', desc: 'Canais de filmes 24h' },
@@ -1150,7 +1156,7 @@ const PLAYLIST_LIBRARY = [
     
     // Notícias
     { name: 'News Global', url: 'https://iptv-org.github.io/iptv/categories/news.m3u', category: 'news', icon: 'fa-newspaper', desc: 'Notícias do mundo' },
-    { name: 'BBC/CNN', url: 'https://iptv-org.github.io/iptv/categories/news.m3u', category: 'news', icon: 'fa-broadcast-tower', desc: 'Grandes emissoras' },
+    { name: 'Classic', url: 'https://iptv-org.github.io/iptv/categories/classic.m3u', category: 'classic', icon: 'fa-film', desc: 'classic' },
     
     // Música
     { name: 'Music Channels', url: 'https://iptv-org.github.io/iptv/categories/music.m3u', category: 'music', icon: 'fa-music', desc: 'Clips e músicas ao vivo' },
@@ -1161,16 +1167,14 @@ const PLAYLIST_LIBRARY = [
     // Mundial / Outros países
     { name: 'USA', url: 'https://iptv-org.github.io/iptv/countries/us.m3u', category: 'world', icon: 'fa-flag-usa', desc: 'Canais dos EUA' },
     { name: 'UK', url: 'https://iptv-org.github.io/iptv/countries/uk.m3u', category: 'world', icon: 'fa-crown', desc: 'Canais do Reino Unido' },
+    { name: 'Italia', url: 'https://iptv-org.github.io/iptv/languages/it.m3u', category: 'world', icon: 'fa-mug-hot', desc: 'Italia global' },
     { name: 'Latino', url: 'https://iptv-org.github.io/iptv/languages/spa.m3u', category: 'world', icon: 'fa-globe-americas', desc: 'Espanhol global' },
     { name: 'Portugal', url: 'https://iptv-org.github.io/iptv/countries/pt.m3u', category: 'world', icon: 'fa-map-marker-alt', desc: 'Canais de Portugal' },
     
     // Educação/Documentários
     { name: 'Science', url: 'https://iptv-org.github.io/iptv/categories/science.m3u', category: 'education', icon: 'fa-flask', desc: 'Ciência e natureza' },
     { name: 'Documentários', url: 'https://iptv-org.github.io/iptv/categories/documentary.m3u', category: 'education', icon: 'fa-book', desc: 'Documentários 24h' },
-    
-    // Geral/Internacional
-    { name: 'Global', url: 'https://iptv-org.github.io/iptv/index.m3u', category: 'all', icon: 'fa-satellite', desc: 'Todas as categorias' },
-    { name: 'Free TV', url: 'https://iptv-org.github.io/iptv/index.m3u', category: 'all', icon: 'fa-wifi', desc: 'Canais gratuitos' }
+
 ];
 
 const els = {
