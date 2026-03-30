@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NEBULA IPTV | Stream Master</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f1f, #03050b);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            color: #eef2ff;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* modern glassmorphic scanline */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, rgba(0,255,255,0.02) 0px, rgba(0,255,255,0.02) 2px, transparent 2px, transparent 6px);
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* focus ring utility (keyboard/mouse friendly) */
+        .focus-ring:focus-visible {
+            outline: 2px solid #2dd4bf;
+            outline-offset: 3px;
+            transform: scale(1.01);
+            transition: all 0.1s ease;
+        }
+
+        /* main screens */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: opacity 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            overflow-y: auto;
+        }
+
+        .screen-hidden {
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        /* ========= HOME SCREEN ========= */
+        #homeScreen {
+            background: radial-gradient(ellipse at 70% 20%, rgba(18, 25, 55, 0.6), #03050b);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .home-container {
+            max-width: 680px;
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(8, 12, 25, 0.65);
+            backdrop-filter: blur(16px);
+            border-radius: 3rem;
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            padding: 2.2rem 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.5);
+        }
+
+        .logo {
+            font-size: 3.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #2dd4bf);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
+            display: inline-block;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            background: rgba(45,212,191,0.2);
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            margin-left: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            border: 0.5px solid rgba(45,212,191,0.5);
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            font-size: 1rem;
+            background: #0b0f1c;
+            border: 1.5px solid #2a2f42;
+            border-radius: 2rem;
+            color: #e2e8f0;
+            font-family: 'Fira Code', monospace;
+            margin: 1.5rem 0 1rem;
+            transition: all 0.2s;
+        }
+
+        .url-input:focus {
+            border-color: #2dd4bf;
+            box-shadow: 0 0 0 3px rgba(45,212,191,0.2);
+            outline: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0 1.2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.9rem 1.2rem;
+            font-weight: 600;
+            border-radius: 3rem;
+            background: #0f1322;
+            border: 1px solid #2a2f42;
+            color: #cbd5e6;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(95deg, #0f172a, #0b1120);
+            border-color: #2dd4bf;
+            color: #2dd4bf;
+            font-weight: 700;
+        }
+
+        .btn-primary:hover, .btn-primary:focus-visible {
+            background: #1a2c3c;
+            border-color: #5eead4;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary:hover {
+            background: #1e1f2e;
+            border-color: #f87171;
+            color: #fda4af;
+        }
+
+        .info-status {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: #7e8aa8;
+            margin-top: 1rem;
+            padding-top: 0.8rem;
+            border-top: 1px dashed #2a2f42;
+        }
+
+        .hint-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.2rem;
+            font-size: 0.7rem;
+            color: #5b6a8c;
+        }
+
+        /* ========= PLAYER SCREEN ========= */
+        #playerScreen {
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-wrapper {
+            flex: 1;
+            background: #000;
+            position: relative;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        .player-controls-overlay {
+            position: fixed;
+            bottom: 1rem;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 20;
+            padding: 0.8rem;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 3rem;
+            margin: 0 auto;
+            width: fit-content;
+            border: 1px solid rgba(45,212,191,0.3);
+            transition: opacity 0.2s;
+        }
+
+        .ctrl-btn {
+            background: rgba(20, 25, 45, 0.9);
+            border: none;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .ctrl-btn:active { transform: scale(0.96); }
+
+        /* ========= CHANNEL SIDEBAR (mobile friendly drawer) ========= */
+        .channel-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: min(85%, 380px);
+            background: rgba(6, 10, 22, 0.96);
+            backdrop-filter: blur(24px);
+            border-right: 1px solid #2dd4bf40;
+            transform: translateX(-100%);
+            transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.6);
+        }
+
+        .channel-drawer.open {
+            transform: translateX(0);
+        }
+
+        .drawer-header {
+            padding: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            border-bottom: 1px solid #2a2f42;
+            background: #050914;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .channel-item {
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border-bottom: 1px solid #1a1f32;
+            cursor: pointer;
+            transition: 0.08s linear;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .channel-item.active {
+            background: rgba(45,212,191,0.2);
+            border-left: 4px solid #2dd4bf;
+            padding-left: calc(1.5rem - 4px);
+        }
+
+        .channel-item:active { background: #2a2f50; }
+
+        /* OSD (notification) */
+        .osd {
+            position: fixed;
+            bottom: 5rem;
+            left: 1rem;
+            right: 1rem;
+            max-width: 360px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 1rem 1.5rem;
+            border-left: 4px solid #2dd4bf;
+            z-index: 1100;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            font-family: monospace;
+        }
+
+        .osd-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .osd-url {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            word-break: break-all;
+        }
+
+        /* mobile drawer close button */
+        .drawer-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 640px) {
+            .home-container { padding: 1.5rem; }
+            .logo { font-size: 2.2rem; }
+            .btn { padding: 0.7rem; }
+            .player-controls-overlay { gap: 0.6rem; }
+            .ctrl-btn { padding: 0.4rem 0.9rem; font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="homeScreen" class="screen">
+    <div class="home-container">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap;">
+            <div>
+                <span class="logo">NEBULA IPTV</span>
+                <span class="badge">WEB • MOBILE</span>
+            </div>
+        </div>
+        <div style="height: 2px; background: linear-gradient(90deg, #2dd4bf, transparent); margin: 1rem 0 0.5rem;"></div>
+        <p style="margin: 1rem 0 0.2rem; font-size: 0.85rem; opacity: 0.7;">▲ ▼  NAVEGAR &nbsp;&nbsp;|&nbsp;&nbsp; ENTER / CLICK &nbsp;&nbsp;|&nbsp;&nbsp; ESC / BACK</p>
+        <input type="text" id="playlistUrl" class="url-input" value="https://danielangelone.github.io/simple-iptv/list.m3u" placeholder="https://... playlist.m3u or .m3u8">
+        <div class="button-group">
+            <button id="loadBtn" class="btn btn-primary focus-ring">▶ LOAD PLAYLIST</button>
+            <button id="clearBtn" class="btn btn-secondary focus-ring">✕ CLEAR</button>
+        </div>
+        <div id="statusMsg" class="info-status">📡 Ready — paste any M3U URL</div>
+        <div class="hint-buttons">
+            <span>🎮 Keyboard: ↑↓ / Enter</span>
+            <span>📱 Touch: tap buttons</span>
+        </div>
+    </div>
+</div>
+
+<!-- PLAYER SCREEN -->
+<div id="playerScreen" class="screen screen-hidden">
+    <div class="video-wrapper">
+        <video id="videoPlayer" autoplay playsinline></video>
+    </div>
+    <div class="player-controls-overlay" id="playerControls">
+        <button class="ctrl-btn" id="playPauseBtn">⏯️ Play/Pause</button>
+        <button class="ctrl-btn" id="prevChannelBtn">⬆️ Prev</button>
+        <button class="ctrl-btn" id="nextChannelBtn">⬇️ Next</button>
+        <button class="ctrl-btn" id="listToggleBtn">📺 Channels</button>
+        <button class="ctrl-btn" id="exitPlayerBtn">🏠 Exit</button>
+    </div>
+</div>
+
+<!-- CHANNEL DRAWER (sidebar) -->
+<div id="channelDrawer" class="channel-drawer">
+    <div class="drawer-header">
+        📡 CHANNELS
+        <button id="closeDrawerBtn" class="drawer-close">✕</button>
+    </div>
+    <div id="channelListContainer"></div>
+</div>
+
+<!-- OSD floating notification -->
+<div id="osdNotification" class="osd" style="display: none;">
+    <div class="osd-title" id="osdTitle">Channel Name</div>
+    <div class="osd-url" id="osdSub">Now playing</div>
+</div>
+
+<script>
+    // ------------------- DOM elements -------------------
+    const homeScreen = document.getElementById('homeScreen');
+    const playerScreen = document.getElementById('playerScreen');
+    const video = document.getElementById('videoPlayer');
+    const playlistUrlInput = document.getElementById('playlistUrl');
+    const loadBtn = document.getElementById('loadBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const channelDrawer = document.getElementById('channelDrawer');
+    const channelListContainer = document.getElementById('channelListContainer');
+    const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevChannelBtn = document.getElementById('prevChannelBtn');
+    const nextChannelBtn = document.getElementById('nextChannelBtn');
+    const listToggleBtn = document.getElementById('listToggleBtn');
+    const exitPlayerBtn = document.getElementById('exitPlayerBtn');
+    const osd = document.getElementById('osdNotification');
+    const osdTitle = document.getElementById('osdTitle');
+    const osdSub = document.getElementById('osdSub');
+
+    // ------------------- Global state -------------------
+    let channels = [];               // array of { name, url }
+    let currentChannelIndex = 0;
+    let isDrawerOpen = false;
+    let osdTimeout = null;
+    let currentPlaylistUrl = "";
+
+    // default fallback channels (Al Jazeera stable)
+    const FALLBACK_CHANNELS = [
+        { name: "Al Jazeera 480p", url: "https://live-hls-apps-aje-fa.getaj.net/AJE/05.m3u8" },
+        { name: "Al Jazeera 720p", url: "https://live-hls-apps-aje-fa.getaj.net/AJE/04.m3u8" }
+    ];
+
+    // ------------------- Helpers -------------------
+    function showOsd(title, subtitle, duration = 2200) {
+        if (osdTimeout) clearTimeout(osdTimeout);
+        osdTitle.innerText = title;
+        osdSub.innerText = subtitle;
+        osd.style.display = 'block';
+        osdTimeout = setTimeout(() => {
+            osd.style.display = 'none';
+        }, duration);
+    }
+
+    function hideOsdImmediate() {
+        if (osdTimeout) clearTimeout(osdTimeout);
+        osd.style.display = 'none';
+    }
+
+    // update drawer UI
+    function renderChannelList() {
+        if (!channelListContainer) return;
+        channelListContainer.innerHTML = '';
+        channels.forEach((ch, idx) => {
+            const div = document.createElement('div');
+            div.className = 'channel-item focus-ring';
+            if (idx === currentChannelIndex) div.classList.add('active');
+            div.innerHTML = `<span style="font-weight:500;">${idx+1}.</span> ${escapeHtml(ch.name)}`;
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectAndPlayChannel(idx);
+                closeDrawer();
+            });
+            channelListContainer.appendChild(div);
+        });
+        if (channels.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'channel-item';
+            emptyDiv.innerText = '⚠️ No channels loaded. Load playlist first.';
+            channelListContainer.appendChild(emptyDiv);
+        }
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    // open drawer (mobile/web)
+    function openDrawer() {
+        isDrawerOpen = true;
+        channelDrawer.classList.add('open');
+        renderChannelList(); // refresh active highlight
+        // scroll active into view
+        setTimeout(() => {
+            const activeItem = channelDrawer.querySelector('.channel-item.active');
+            if (activeItem) activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }, 50);
+    }
+
+    function closeDrawer() {
+        isDrawerOpen = false;
+        channelDrawer.classList.remove('open');
+    }
+
+    function toggleDrawer() {
+        if (isDrawerOpen) closeDrawer();
+        else openDrawer();
+    }
+
+    // play specific channel by index
+    function selectAndPlayChannel(index) {
+        if (!channels.length || index < 0 || index >= channels.length) return;
+        currentChannelIndex = index;
+        const ch = channels[currentChannelIndex];
+        if (!ch.url) {
+            showOsd(ch.name, "⚠️ No stream URL", 1800);
+            return;
+        }
+        // change video source
+        const wasPaused = video.paused;
+        video.src = ch.url;
+        video.load();
+        video.play().catch(e => console.warn("autoplay block", e));
+        showOsd(ch.name, `Channel ${currentChannelIndex+1} / ${channels.length}`, 2500);
+        renderChannelList(); // update drawer active style
+        // if drawer open we keep it open but update highlight
+        if (isDrawerOpen) renderChannelList();
+    }
+
+    function nextChannel() {
+        if (!channels.length) return;
+        let next = currentChannelIndex + 1;
+        if (next >= channels.length) next = 0;
+        selectAndPlayChannel(next);
+    }
+
+    function prevChannel() {
+        if (!channels.length) return;
+        let prev = currentChannelIndex - 1;
+        if (prev < 0) prev = channels.length - 1;
+        selectAndPlayChannel(prev);
+    }
+
+    function togglePlayPause() {
+        if (video.paused) {
+            video.play().catch(e => showOsd("Playback", "Autoplay blocked by browser", 1200));
+            showOsd(channels[currentChannelIndex]?.name || "Player", "▶ Playing", 1200);
+        } else {
+            video.pause();
+            showOsd(channels[currentChannelIndex]?.name || "Player", "⏸ Paused", 1200);
+        }
+    }
+
+    // parse M3U content and merge with fallback
+    function parseM3U(content) {
+        const lines = content.split(/\r?\n/);
+        let parsed = [];
+        let currentName = "";
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (line.startsWith('#EXTINF:')) {
+                let commaIndex = line.lastIndexOf(',');
+                if (commaIndex !== -1) {
+                    currentName = line.substring(commaIndex + 1).trim();
+                    if (currentName === "") currentName = "Unnamed Channel";
+                } else {
+                    currentName = "Channel";
+                }
+            } else if (line.startsWith('http://') || line.startsWith('https://') || line.startsWith('rtmp://')) {
+                if (currentName) {
+                    parsed.push({ name: currentName, url: line });
+                    currentName = "";
+                } else {
+                    // fallback: no name, use url fragment
+                    parsed.push({ name: "Stream " + (parsed.length+1), url: line });
+                }
+            }
+        }
+        // filter out channels with empty url
+        parsed = parsed.filter(ch => ch.url && ch.url.length > 5);
+        return parsed;
+    }
+
+    // load playlist from URL
+    async function loadPlaylist(url) {
+        if (!url || url.trim() === "") {
+            statusMsg.innerText = "❌ Please enter a valid URL";
+            return false;
+        }
+        statusMsg.innerText = "⏳ Loading playlist...";
+        try {
+            const response = await fetch(url, { cache: "no-store" });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const text = await response.text();
+            let loadedChannels = parseM3U(text);
+            // if no valid channels from m3u, keep fallback but show warning
+            if (loadedChannels.length === 0) {
+                statusMsg.innerText = "⚠️ No streams found, using demo channels";
+                channels = [...FALLBACK_CHANNELS];
+            } else {
+                // merge with fallback only if needed? We'll just use loaded
+                channels = loadedChannels;
+                statusMsg.innerText = `✅ Loaded ${channels.length} channels from playlist`;
+            }
+            // additional safety: if channels still empty, use fallback
+            if (channels.length === 0) channels = [...FALLBACK_CHANNELS];
+            currentChannelIndex = 0;
+            renderChannelList();
+            return true;
+        } catch (err) {
+            console.error(err);
+            statusMsg.innerText = `❌ Failed: ${err.message}. Using fallback channels.`;
+            channels = [...FALLBACK_CHANNELS];
+            renderChannelList();
+            return true; // still can play fallback
+        }
+    }
+
+    // enter player mode
+    async function enterPlayerMode() {
+        if (!channels.length) {
+            // if no channels, try reloading current url
+            const urlVal = playlistUrlInput.value.trim();
+            if (urlVal) {
+                const ok = await loadPlaylist(urlVal);
+                if (!ok || channels.length === 0) {
+                    channels = [...FALLBACK_CHANNELS];
+                }
+            } else {
+                channels = [...FALLBACK_CHANNELS];
+            }
+        }
+        if (channels.length === 0) {
+            statusMsg.innerText = "⚠️ No channels available. Add M3U first.";
+            return;
+        }
+        // hide home, show player
+        homeScreen.classList.add('screen-hidden');
+        playerScreen.classList.remove('screen-hidden');
+        // start playing first channel
+        selectAndPlayChannel(currentChannelIndex);
+        // close drawer if open
+        closeDrawer();
+    }
+
+    function exitToHome() {
+        video.pause();
+        video.src = "";
+        homeScreen.classList.remove('screen-hidden');
+        playerScreen.classList.add('screen-hidden');
+        closeDrawer();
+        isDrawerOpen = false;
+        hideOsdImmediate();
+        // re-focus on UI
+        playlistUrlInput.focus();
+    }
+
+    function clearInput() {
+        playlistUrlInput.value = "";
+        statusMsg.innerText = "🧹 Cleared. Paste new M3U URL.";
+        channels = [];
+        currentChannelIndex = 0;
+        renderChannelList();
+    }
+
+    // Load button action: load playlist but stay on home
+    async function handleLoadAndStay() {
+        const url = playlistUrlInput.value.trim();
+        if (!url) {
+            statusMsg.innerText = "📛 Please enter M3U URL first";
+            return;
+        }
+        const success = await loadPlaylist(url);
+        if (success && channels.length) {
+            statusMsg.innerText = `🎬 ${channels.length} channels ready! Press ▶ to start watching.`;
+        } else if (channels.length) {
+            statusMsg.innerText = `📺 Using ${channels.length} channels (demo/fallback)`;
+        } else {
+            statusMsg.innerText = "❌ No valid streams found.";
+        }
+    }
+
+    // Keyboard & navigation: modern unified (supports both desktop & external keyboard on mobile)
+    function handleKeyDown(e) {
+        const key = e.key;
+        const isHomeActive = !homeScreen.classList.contains('screen-hidden');
+        const isPlayerActive = !playerScreen.classList.contains('screen-hidden');
+
+        // common: Escape to exit drawer or go home from player
+        if (key === 'Escape' || key === 'Backspace') {
+            if (isDrawerOpen) {
+                e.preventDefault();
+                closeDrawer();
+                return;
+            }
+            if (isPlayerActive) {
+                e.preventDefault();
+                exitToHome();
+                return;
+            }
+        }
+
+        if (isHomeActive) {
+            // home screen: Enter on load/clear? but we also have navigation
+            if (key === 'Enter' || key === ' ') {
+                e.preventDefault();
+                // if focus is on input, do nothing extra? but better trigger load?
+                if (document.activeElement === playlistUrlInput) {
+                    handleLoadAndStay();
+                } else {
+                    // default load button
+                    handleLoadAndStay();
+                }
+                return;
+            }
+            // Arrow keys for fun: focus shift between elements manually (simple)
+            if (key === 'ArrowDown') {
+                e.preventDefault();
+                if (document.activeElement === playlistUrlInput) loadBtn.focus();
+                else if (document.activeElement === loadBtn) clearBtn.focus();
+                else if (document.activeElement === clearBtn) playlistUrlInput.focus();
+                else loadBtn.focus();
+            }
+            if (key === 'ArrowUp') {
+                e.preventDefault();
+                if (document.activeElement === playlistUrlInput) clearBtn.focus();
+                else if (document.activeElement === loadBtn) playlistUrlInput.focus();
+                else if (document.activeElement === clearBtn) loadBtn.focus();
+                else playlistUrlInput.focus();
+            }
+            return;
+        }
+
+        if (isPlayerActive && !isDrawerOpen) {
+            // player controls
+            if (key === 'ArrowUp') {
+                e.preventDefault();
+                prevChannel();
+            } else if (key === 'ArrowDown') {
+                e.preventDefault();
+                nextChannel();
+            } else if (key === 'ArrowLeft') {
+                e.preventDefault();
+                toggleDrawer();   // open channel list
+            } else if (key === 'ArrowRight') {
+                e.preventDefault();
+                // optional: open drawer also
+                toggleDrawer();
+            } else if (key === 'Enter' || key === ' ' || key === 'MediaPlayPause') {
+                e.preventDefault();
+                togglePlayPause();
+            } else if (key === 'p' || key === 'P') {
+                togglePlayPause();
+            }
+            return;
+        }
+
+        // drawer navigation
+        if (isDrawerOpen && channels.length) {
+            const items = document.querySelectorAll('.channel-item');
+            let activeIdx = -1;
+            items.forEach((el, idx) => { if (el.classList.contains('active')) activeIdx = idx; });
+            if (key === 'ArrowUp') {
+                e.preventDefault();
+                let newIdx = activeIdx > 0 ? activeIdx - 1 : items.length - 1;
+                if (items[newIdx]) items[newIdx].scrollIntoView({ block: 'nearest' });
+                // programmatically select without playing? we'll just highlight but we need visual feedback
+                if (items[newIdx]) {
+                    items.forEach(i => i.classList.remove('active'));
+                    items[newIdx].classList.add('active');
+                    currentChannelIndex = newIdx;
+                    renderChannelList(); // sync internal active
+                }
+            } else if (key === 'ArrowDown') {
+                e.preventDefault();
+                let newIdx = activeIdx < items.length-1 ? activeIdx + 1 : 0;
+                if (items[newIdx]) items[newIdx].scrollIntoView({ block: 'nearest' });
+                if (items[newIdx]) {
+                    items.forEach(i => i.classList.remove('active'));
+                    items[newIdx].classList.add('active');
+                    currentChannelIndex = newIdx;
+                    renderChannelList();
+                }
+            } else if (key === 'Enter' || key === ' ') {
+                e.preventDefault();
+                if (activeIdx !== -1) selectAndPlayChannel(activeIdx);
+                closeDrawer();
+            }
+        }
+    }
+
+    // ----------- event listeners -----------
+    loadBtn.addEventListener('click', handleLoadAndStay);
+    clearBtn.addEventListener('click', clearInput);
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    prevChannelBtn.addEventListener('click', prevChannel);
+    nextChannelBtn.addEventListener('click', nextChannel);
+    listToggleBtn.addEventListener('click', toggleDrawer);
+    exitPlayerBtn.addEventListener('click', exitToHome);
+    closeDrawerBtn.addEventListener('click', closeDrawer);
+
+    // make click on video optional (double tap pause)
+    video.addEventListener('click', () => togglePlayPause());
+
+    // handle video errors gracefully
+    video.addEventListener('error', (e) => {
+        console.warn("video error", e);
+        showOsd(channels[currentChannelIndex]?.name || "Stream", "❌ Playback error, try next channel", 2000);
+    });
+
+    // auto re-try on stalled?
+    video.addEventListener('waiting', () => {
+        showOsd(channels[currentChannelIndex]?.name || "Buffering", "Loading stream...", 1500);
+    });
+
+    document.addEventListener('keydown', handleKeyDown);
+    // initial drawer close on backdrop click? close when click outside drawer but on player
+    document.addEventListener('click', (e) => {
+        if (isDrawerOpen && !channelDrawer.contains(e.target) && !listToggleBtn.contains(e.target)) {
+            closeDrawer();
+        }
+    });
+
+    // initial render empty channels
+    renderChannelList();
+    // focus input on load
+    playlistUrlInput.focus();
+    // preload fallback channels for smoothness
+    channels = [...FALLBACK_CHANNELS];
+    renderChannelList();
+    statusMsg.innerText = "🎬 Demo channels active. Load your M3U for more!";
+</script>
+</body>
+</html>
