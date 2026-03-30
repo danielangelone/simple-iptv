@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>🎬 IPTV Player Pro</title>
+<title>🎬 IPTV Player</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 :root {
@@ -840,7 +840,7 @@ video {
 <div class="controls-hint" id="hint"><i class="fas fa-hand-pointer"></i><span>Deslize ← → para trocar | Toque para menu</span></div>
 
 <script>
-const CONFIG = { osdDuration: 2200, menuAutoClose: 6000, swipeThreshold: 50 };
+const CONFIG = { osdDuration: 2200, menuAutoClose: 60000, swipeThreshold: 50 };
 
 const els = {
     urlInput: document.getElementById('u'), loadBtn: document.getElementById('b1'),
@@ -1269,7 +1269,7 @@ els.prevBtn.onclick = e => { e.stopPropagation(); prevChannel(); };
 els.nextBtn.onclick = e => { e.stopPropagation(); nextChannel(); };
 els.muteBtn.onclick = e => { e.stopPropagation(); toggleMute(); };
 els.volumeSlider.oninput = e => setVolume(parseFloat(e.target.value));
-els.progressContainer.onclick = e => { e.stopPropagation(); showOSD('📡 Stream ao vivo', 'Sem controle de progresso', 9200); };
+els.progressContainer.onclick = e => { e.stopPropagation(); showOSD('📡 Stream ao vivo', 'Sem controle de progresso', 1200); };
 
 els.menuBtn.onclick = e => { e.stopPropagation(); toggleSidebar(); };
 els.closeSidebar.onclick = e => { e.stopPropagation(); closeSidebar(); };
