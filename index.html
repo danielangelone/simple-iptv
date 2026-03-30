@@ -1,293 +1,210 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IPTV Player</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 
-        * { box-sizing: border-box; }
+        :root {
+            --accent: #4fc3f7;
+            --accent-dark: #0288d1;
+        }
 
+        * { box-sizing: border-box; margin:0; padding:0; }
         body {
             margin: 0;
             padding: 0;
             background: #05070f;
             color: #e8eaf0;
-            font-family: 'Rajdhani', Arial, sans-serif;
-            width: 1920px;
-            height: 1080px;
+            font-family: 'Rajdhani', system-ui, sans-serif;
             overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            touch-action: manipulation;
         }
 
-        /* ── scanline texture overlay ── */
+        /* Scanline */
         body::after {
             content: '';
             position: fixed;
             inset: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 3px,
-                rgba(0,0,0,0.08) 3px,
-                rgba(0,0,0,0.08) 4px
-            );
+            background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
             pointer-events: none;
             z-index: 9000;
         }
 
-        /* ── focusable elements ── */
         .f {
-            border: 2px solid #1e2540;
-            outline: none;
-            transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+            transition: all 0.2s ease;
         }
         .f.s {
-            border-color: #4fc3f7;
-            background: rgba(79,195,247,0.07);
-            box-shadow: 0 0 0 1px rgba(79,195,247,0.25), inset 0 0 20px rgba(79,195,247,0.04);
+            border-color: var(--accent);
+            background: rgba(79,195,247,0.1);
+            box-shadow: 0 0 0 3px rgba(79,195,247,0.3);
         }
 
-        /* ══ SCREENS ══ */
+        /* Screens */
         #s1, #s2, #s3 {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
         }
 
-        /* ── SCREEN 1 – home ── */
         #s1 {
             background: #05070f;
             z-index: 10;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 0 160px;
-        }
-
-        /* left accent bar */
-        #s1::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 6px;
-            background: linear-gradient(180deg, transparent, #4fc3f7 30%, #0288d1 70%, transparent);
+            align-items: center;
+            padding: 20px;
+            text-align: center;
         }
 
         .logo-row {
             display: flex;
             align-items: baseline;
-            gap: 18px;
-            margin-bottom: 10px;
+            gap: 12px;
+            margin-bottom: 8px;
         }
-        .logo-main {
-            font-family: 'Rajdhani', Arial, sans-serif;
-            font-size: 72px;
-            font-weight: 700;
-            letter-spacing: 8px;
-            color: #fff;
-            text-transform: uppercase;
-        }
-        .logo-tag {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 18px;
-            color: #4fc3f7;
-            letter-spacing: 4px;
-        }
+        .logo-main { font-size: clamp(42px, 8vw, 72px); font-weight: 700; letter-spacing: 6px; }
+        .logo-tag { font-family: 'Share Tech Mono', monospace; font-size: 18px; color: var(--accent); }
 
-        .divider {
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, #4fc3f7, #0288d1 40%, transparent);
-            margin-bottom: 48px;
-        }
-
-        .hint {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 18px;
-            color: #455a7a;
-            letter-spacing: 2px;
-            margin-bottom: 40px;
-        }
-
-        /* URL input */
         #u {
-            display: block;
             width: 100%;
-            padding: 24px 30px;
-            font-size: 26px;
-            font-family: 'Share Tech Mono', monospace;
+            max-width: 620px;
+            padding: 18px 24px;
+            font-size: 18px;
             background: #0a0e1c;
-            color: #c8d8f0;
             border: 2px solid #1e2540;
-            letter-spacing: 0.5px;
-            margin-bottom: 32px;
+            color: #c8d8f0;
+            font-family: 'Share Tech Mono', monospace;
+            margin: 20px 0;
         }
-        #u:focus { outline: none; }
 
-        /* buttons row */
         .btn-row {
             display: flex;
-            gap: 20px;
+            gap: 16px;
+            width: 100%;
+            max-width: 620px;
         }
         button {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            padding: 22px 44px;
-            font-size: 26px;
-            font-family: 'Rajdhani', Arial, sans-serif;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
+            flex: 1;
+            padding: 18px;
+            font-size: 20px;
+            font-weight: 600;
+            border: 2px solid #1e2540;
             background: #0a0e1c;
             color: #e8eaf0;
-            border: 2px solid #1e2540;
             cursor: pointer;
         }
-        #b1.s {
-            border-color: #4fc3f7;
-            background: rgba(79,195,247,0.08);
-            color: #4fc3f7;
-            box-shadow: 0 0 0 1px rgba(79,195,247,0.2);
-        }
-        #b2.s {
-            border-color: #ef5350;
-            background: rgba(239,83,80,0.08);
-            color: #ef5350;
-            box-shadow: 0 0 0 1px rgba(239,83,80,0.2);
-        }
+        #b1.s { border-color: var(--accent); color: var(--accent); }
 
-        #e {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 20px;
-            color: #4fc3f7;
-            margin-top: 32px;
-            letter-spacing: 1px;
-        }
-
-        /* ── SCREEN 2 – player ── */
         #s2 {
             display: none;
-            z-index: 5;
             background: #000;
+            z-index: 5;
         }
         video {
             width: 100%;
             height: 100%;
-            display: block;
+            object-fit: contain;
         }
 
-        /* ── SCREEN 3 – channel list sidebar ── */
+        /* Lista de canais - responsiva */
         #s3 {
             display: none;
-            z-index: 8;
-            width: 480px;
-            height: 100%;
-            background: rgba(5,7,15,0.96);
-            border-right: 1px solid #1e2540;
+            z-index: 20;
+            background: rgba(5,7,15,0.98);
             overflow-y: auto;
             padding: 20px 0;
         }
-        #s3::before {
-            content: '';
-            position: absolute;
-            left: 480px; top: 0; bottom: 0;
-            width: 4px;
-            background: linear-gradient(180deg, transparent, #4fc3f7 20%, #0288d1 80%, transparent);
-            pointer-events: none;
+        @media (min-width: 768px) {
+            #s3 {
+                width: 420px;
+                border-right: 1px solid #1e2540;
+            }
+            #s3::before {
+                content: '';
+                position: absolute;
+                right: -4px; top: 0; bottom: 0;
+                width: 4px;
+                background: linear-gradient(180deg, transparent, var(--accent) 30%, var(--accent-dark) 70%, transparent);
+            }
         }
-        #s3::-webkit-scrollbar { width: 4px; }
-        #s3::-webkit-scrollbar-track { background: #0a0e1c; }
-        #s3::-webkit-scrollbar-thumb { background: #1e3050; border-radius: 2px; }
 
-        /* channel items */
         .c {
-            display: block;
-            width: 100%;
-            padding: 20px 32px;
-            font-size: 24px;
-            font-family: 'Rajdhani', Arial, sans-serif;
-            font-weight: 600;
-            letter-spacing: 1px;
-            cursor: pointer;
-            border-left: 3px solid transparent;
+            padding: 16px 24px;
+            font-size: 20px;
             border-bottom: 1px solid #0d1120;
             color: #8090b0;
-            background: transparent;
-            transition: all 0.1s;
+            cursor: pointer;
         }
         .c.s {
-            border-left-color: #4fc3f7;
-            background: rgba(79,195,247,0.06);
-            color: #e8eaf0;
-            box-shadow: none;
+            background: rgba(79,195,247,0.12);
+            color: white;
+            border-left: 5px solid var(--accent);
         }
 
-        /* ── OSD overlay ── */
+        /* OSD Overlay */
         #o {
             position: fixed;
-            bottom: 60px;
-            left: 60px;
-            background: rgba(5,7,15,0.88);
-            border: 1px solid #1e2540;
-            border-left: 3px solid #4fc3f7;
-            padding: 24px 36px;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(5,7,15,0.92);
+            border: 2px solid var(--accent);
+            padding: 16px 28px;
+            border-radius: 8px;
             display: none;
             z-index: 100;
-            min-width: 480px;
+            min-width: 300px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
-        #on {
-            font-family: 'Rajdhani', Arial, sans-serif;
-            font-size: 36px;
-            font-weight: 700;
-            color: #fff;
-            letter-spacing: 2px;
-        }
-        #ou {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 18px;
-            color: #4fc3f7;
-            letter-spacing: 3px;
-            margin-top: 6px;
+        #on { font-size: 28px; font-weight: 700; }
+        #ou { font-size: 15px; color: var(--accent); margin-top: 4px; font-family: 'Share Tech Mono', monospace; }
+
+        /* Fullscreen button */
+        #fsBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 150;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            font-size: 24px;
+            display: none;
         }
 
-        /* ── debug (hidden by default) ── */
-        #d {
-            position: fixed;
-            top: 10px; left: 10px;
-            background: #f00;
-            color: #fff;
-            padding: 10px;
-            font-size: 16px;
-            z-index: 9999;
-            max-width: 800px;
-            max-height: 200px;
-            overflow: auto;
-            display: none;
+        @media (max-width: 767px) {
+            #o { bottom: 100px; min-width: 280px; }
+            .c { font-size: 18px; padding: 18px 20px; }
         }
     </style>
 </head>
 <body>
-    <div id="d">START</div>
 
     <div id="s1">
         <div class="logo-row">
             <span class="logo-main">IPTV</span>
-            <span class="logo-tag">PLAYER v2</span>
+            <span class="logo-tag">PLAYER</span>
         </div>
-        <div class="divider"></div>
-        <p class="hint">▲ ▼ NAVEGAR &nbsp;|&nbsp; OK CONFIRMAR</p>
         <input id="u" class="f" value="https://danielangelone.github.io/simple-iptv/list.m3u">
         <div class="btn-row">
-            <button id="b1" class="f s">▶ CARREGAR</button>
-            <button id="b2" class="f">✕ LIMPAR</button>
+            <button id="b1" class="f s">▶ CARREGAR LISTA</button>
+            <button id="b2" class="f">LIMPAR</button>
         </div>
-        <p id="e"></p>
+        <p id="e" style="margin-top:20px; font-family:monospace; color:#4fc3f7;"></p>
     </div>
 
     <div id="s2">
-        <video id="v" autoplay></video>
+        <video id="v" autoplay playsinline></video>
     </div>
 
     <div id="s3"></div>
@@ -297,227 +214,245 @@
         <div id="ou"></div>
     </div>
 
+    <button id="fsBtn">⛶</button>
+
     <script>
-var u  = document.getElementById('u');
-var b1 = document.getElementById('b1');
-var b2 = document.getElementById('b2');
-var s1 = document.getElementById('s1');
-var s2 = document.getElementById('s2');
-var s3 = document.getElementById('s3');
-var v  = document.getElementById('v');
-var o  = document.getElementById('o');
-var on = document.getElementById('on');
-var ou = document.getElementById('ou');
-var e  = document.getElementById('e');
-var d  = document.getElementById('d');
-d.style.display = 'none';
+        // Variáveis principais
+        const u = document.getElementById('u');
+        const b1 = document.getElementById('b1');
+        const b2 = document.getElementById('b2');
+        const s1 = document.getElementById('s1');
+        const s2 = document.getElementById('s2');
+        const s3 = document.getElementById('s3');
+        const v = document.getElementById('v');
+        const o = document.getElementById('o');
+        const on = document.getElementById('on');
+        const ou = document.getElementById('ou');
+        const e = document.getElementById('e');
+        const fsBtn = document.getElementById('fsBtn');
 
-var focos = [];
-var fIndex = 0;
-var canais = [];
-var canalAtual = 0;
-var listaAberta = false;
+        let canais = [];
+        let canalAtual = 0;
+        let listaAberta = false;
+        let focos = [];
+        let fIndex = 0;
+        let touchStartX = 0;
 
-focos = [u, b1, b2];
-fIndex = 1;
-atualizarFoco();
+        // Foco inicial
+        focos = [u, b1, b2];
+        fIndex = 1;
 
-function atualizarFoco() {
-    var todos = document.querySelectorAll('.f, .c');
-    for (var i = 0; i < todos.length; i++) {
-        todos[i].className = todos[i].className.replace(' s', '');
-    }
-    if (focos[fIndex]) {
-        focos[fIndex].className += ' s';
-    }
-}
-
-document.onkeydown = function(evt) {
-    var k = evt.keyCode;
-    evt.preventDefault();
-    var t = '';
-    if (k==13 || k==29443)  t='OK';
-    else if (k==38 || k==29460) t='CIMA';
-    else if (k==40 || k==29461) t='BAIXO';
-    else if (k==37 || k==29462) t='ESQ';
-    else if (k==461 || k==29485) t='BACK';
-    else if (k==415) t='PLAY';
-    else if (k==19)  t='PAUSE';
-
-    if (s1.style.display != 'none') {
-        if (t=='CIMA')  { fIndex = Math.max(0, fIndex-1); atualizarFoco(); }
-        else if (t=='BAIXO') { fIndex = Math.min(2, fIndex+1); atualizarFoco(); }
-        else if (t=='OK') ativarURL();
-        return;
-    }
-    if (listaAberta) { processarLista(t); return; }
-    processarPlayer(t);
-};
-
-function ativarURL() {
-    var el = focos[fIndex];
-    if (el == u)  u.focus();
-    else if (el == b1) carregar();
-    else if (el == b2) { u.value = ''; u.focus(); }
-}
-
-function carregar() {
-    var url = u.value;
-    e.innerHTML = 'CARREGANDO...';
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            parseM3U(xhr.responseText);
+        function atualizarFoco() {
+            document.querySelectorAll('.f, .c').forEach(el => el.classList.remove('s'));
+            if (focos[fIndex]) focos[fIndex].classList.add('s');
         }
-    };
-    xhr.send();
-}
 
-function parseM3U(txt) {
-    var canaisFixos = [
-        {n: 'Al Jazeera 480p', u: 'https://live-hls-apps-aje-fa.getaj.net/AJE/05.m3u8'},
-        {n: 'Al Jazeera 720p', u: 'https://live-hls-apps-aje-fa.getaj.net/AJE/04.m3u8'}
-    ];
-    var linhas = txt.split('\n');
-    canais = [];
-    for (var i = 0; i < canaisFixos.length; i++) canais.push(canaisFixos[i]);
-    for (var i = 0; i < linhas.length; i++) {
-        var lin = linhas[i].trim();
-        if (lin.indexOf('#EXTINF:') == 0) {
-            var nome = 'Canal';
-            var p = lin.lastIndexOf(',');
-            if (p > 0) nome = lin.substring(p+1).trim();
-            canais.push({n: nome, u: ''});
-        } else if ((lin.indexOf('http')==0 || lin.indexOf('rtmp')==0) && canais.length > canaisFixos.length && canais[canais.length-1].u == '') {
-            canais[canais.length-1].u = lin;
+        // Teclado (mantido para TV / desktop)
+        document.addEventListener('keydown', (evt) => {
+            evt.preventDefault();
+            let t = '';
+            if ([13, 29443].includes(evt.keyCode)) t = 'OK';
+            else if ([38, 29460].includes(evt.keyCode)) t = 'CIMA';
+            else if ([40, 29461].includes(evt.keyCode)) t = 'BAIXO';
+            else if ([37, 29462].includes(evt.keyCode)) t = 'ESQ';
+            else if ([39, 29463].includes(evt.keyCode)) t = 'DIR';
+            else if ([461, 29485].includes(evt.keyCode)) t = 'BACK';
+
+            if (s1.style.display !== 'none') {
+                if (t === 'CIMA') { fIndex = Math.max(0, fIndex-1); atualizarFoco(); }
+                if (t === 'BAIXO') { fIndex = Math.min(2, fIndex+1); atualizarFoco(); }
+                if (t === 'OK') ativarURL();
+                return;
+            }
+
+            if (listaAberta) {
+                processarLista(t);
+            } else {
+                processarPlayer(t);
+            }
+        });
+
+        function ativarURL() {
+            if (focos[fIndex] === b1) carregar();
+            else if (focos[fIndex] === b2) { u.value = ''; }
         }
-    }
-    var temp = [];
-    for (var i = 0; i < canais.length; i++) {
-        if (canais[i].u != '' || i < canaisFixos.length) temp.push(canais[i]);
-    }
-    canais = temp;
-    e.innerHTML = canais.length + ' CANAIS ENCONTRADOS';
-    if (canais.length > 0) setTimeout(iniciarPlayer, 500);
-}
 
-function iniciarPlayer() {
-    s1.style.display = 'none';
-    s2.style.display = 'block';
-    s3.innerHTML = '';
-    for (var i = 0; i < canais.length; i++) {
-        var div = document.createElement('div');
-        div.className = 'c f';
-        div.innerHTML = (i+1) + '.&nbsp;&nbsp;' + canais[i].n;
-        s3.appendChild(div);
-    }
-    tocar(0);
-}
+        function carregar() {
+            const url = u.value.trim();
+            if (!url) return;
+            e.textContent = 'CARREGANDO...';
+            fetch(url)
+                .then(r => r.text())
+                .then(txt => parseM3U(txt))
+                .catch(() => e.textContent = 'ERRO AO CARREGAR LISTA');
+        }
 
-function mostrarLista() {
-    listaAberta = true;
-    s3.style.display = 'block';
-    var items = s3.querySelectorAll('.c');
-    focos = [];
-    for (var i = 0; i < items.length; i++) focos.push(items[i]);
-    fIndex = canalAtual;
-    if (fIndex >= focos.length) fIndex = focos.length - 1;
-    if (fIndex < 0) fIndex = 0;
-    atualizarFoco();
-    if (focos[fIndex]) focos[fIndex].scrollIntoView({block: 'center'});
-}
+        function parseM3U(txt) {
+            // Mesmo parse anterior (mantido simplificado)
+            const canaisFixos = [
+                {n: 'Al Jazeera 480p', u: 'https://live-hls-apps-aje-fa.getaj.net/AJE/05.m3u8'},
+                {n: 'Al Jazeera 720p', u: 'https://live-hls-apps-aje-fa.getaj.net/AJE/04.m3u8'}
+            ];
 
-function esconderLista() {
-    listaAberta = false;
-    s3.style.display = 'none';
-    focos = [];
-    fIndex = 0;
-}
+            canais = [...canaisFixos];
+            const linhas = txt.split('\n');
+            let canalTemp = null;
 
-function processarLista(t) {
-    if (focos.length == 0) { mostrarLista(); return; }
-    if (t=='CIMA') {
-        if (fIndex > 0) { fIndex--; atualizarFoco(); if(focos[fIndex]) focos[fIndex].scrollIntoView({block:'center'}); }
-    } else if (t=='BAIXO') {
-        if (fIndex < focos.length-1) { fIndex++; atualizarFoco(); if(focos[fIndex]) focos[fIndex].scrollIntoView({block:'center'}); }
-    } else if (t=='OK') {
-        if (fIndex >= 0 && fIndex < canais.length) tocar(fIndex);
-    } else if (t=='ESQ' || t=='BACK') {
-        esconderLista();
-    }
-}
+            for (let lin of linhas) {
+                lin = lin.trim();
+                if (lin.startsWith('#EXTINF:')) {
+                    let nome = lin.split(',').pop().trim() || 'Canal';
+                    canalTemp = {n: nome, u: ''};
+                } else if (lin.startsWith('http') && canalTemp) {
+                    canalTemp.u = lin;
+                    canais.push(canalTemp);
+                    canalTemp = null;
+                }
+            }
 
-function processarPlayer(t) {
-    if (t=='OK') {
-        if (v.paused) v.play(); else v.pause();
-        mostrarOverlay();
-    } else if (t=='CIMA') {
-        if (canalAtual > 0) tocar(canalAtual-1);
-    } else if (t=='BAIXO') {
-        if (canalAtual < canais.length-1) tocar(canalAtual+1);
-    } else if (t=='ESQ') {
-        mostrarLista();
-    } else if (t=='BACK') {
-        voltarURL();
-    } else if (t=='PLAY') {
-        v.play(); mostrarOverlay();
-    } else if (t=='PAUSE') {
-        v.pause(); mostrarOverlay();
-    }
-}
+            e.textContent = `${canais.length} canais carregados`;
+            setTimeout(iniciarPlayer, 300);
+        }
 
-function tocar(idx) {
-    if (idx < 0 || idx >= canais.length) return;
-    canalAtual = idx;
-    var c = canais[idx];
-    on.innerHTML = c.n;
-    ou.innerHTML = 'CANAL ' + (idx+1) + ' / ' + canais.length;
-    o.style.display = 'block';
-    v.src = c.u;
-    v.setAttribute('preload', 'auto');
-    setTimeout(function() { v.play(); }, 100);
-    setTimeout(function() { o.style.display = 'none'; }, 3000);
-}
+        function iniciarPlayer() {
+            s1.style.display = 'none';
+            s2.style.display = 'block';
+            fsBtn.style.display = 'block';
 
-function mostrarOverlay() {
-    on.innerHTML = canais[canalAtual].n;
-    ou.innerHTML = v.paused ? 'PAUSADO' : 'AO VIVO';
-    o.style.display = 'block';
-    setTimeout(function() { o.style.display = 'none'; }, 2000);
-}
+            s3.innerHTML = '';
+            canais.forEach((c, i) => {
+                const div = document.createElement('div');
+                div.className = 'c f';
+                div.textContent = `${i+1}. ${c.n}`;
+                div.onclick = () => tocar(i);
+                s3.appendChild(div);
+            });
 
-function voltarURL() {
-    v.pause();
-    v.src = '';
-    s2.style.display = 'none';
-    s3.style.display = 'none';
-    listaAberta = false;
-    s1.style.display = 'block';
-    focos = [u, b1, b2];
-    fIndex = 1;
-    atualizarFoco();
-}
+            tocar(0);
+        }
 
-v.onerror = function() {
-    on.innerHTML = 'ERRO NO CANAL';
-    ou.innerHTML = 'TENTANDO RECONECTAR...';
-    o.style.display = 'block';
-};
-v.onwaiting = function() {
-    on.innerHTML = canais[canalAtual].n;
-    ou.innerHTML = 'CARREGANDO...';
-    o.style.display = 'block';
-};
-v.onplaying = function() {
-    setTimeout(function() { o.style.display = 'none'; }, 1000);
-};
-v.onpause = function() {
-    on.innerHTML = canais[canalAtual].n;
-    ou.innerHTML = 'PAUSADO';
-    o.style.display = 'block';
-    setTimeout(function() { o.style.display = 'none'; }, 2000);
-};
+        function mostrarLista() {
+            listaAberta = true;
+            s3.style.display = 'block';
+            focos = Array.from(s3.querySelectorAll('.c'));
+            fIndex = canalAtual;
+            atualizarFoco();
+            if (focos[fIndex]) focos[fIndex].scrollIntoView({block: 'center'});
+        }
+
+        function esconderLista() {
+            listaAberta = false;
+            s3.style.display = 'none';
+        }
+
+        function processarLista(t) {
+            if (t === 'CIMA' && fIndex > 0) fIndex--;
+            else if (t === 'BAIXO' && fIndex < focos.length-1) fIndex++;
+            else if (t === 'OK' && focos[fIndex]) tocar(fIndex);
+            else if (t === 'ESQ' || t === 'BACK') esconderLista();
+
+            atualizarFoco();
+            if (focos[fIndex]) focos[fIndex].scrollIntoView({block:'center'});
+        }
+
+        function processarPlayer(t) {
+            if (t === 'OK') {
+                v.paused ? v.play() : v.pause();
+            } else if (t === 'CIMA') {
+                if (canalAtual > 0) tocar(canalAtual - 1);
+            } else if (t === 'BAIXO') {
+                if (canalAtual < canais.length - 1) tocar(canalAtual + 1);
+            } else if (t === 'ESQ') mostrarLista();
+            else if (t === 'BACK') voltarURL();
+        }
+
+        function tocar(idx) {
+            if (idx < 0 || idx >= canais.length) return;
+            canalAtual = idx;
+            const c = canais[idx];
+
+            on.textContent = c.n;
+            ou.textContent = `CANAL ${idx+1} / ${canais.length}`;
+            o.style.display = 'block';
+
+            v.pause();
+            v.src = c.u;
+            v.load();
+
+            setTimeout(() => v.play().catch(()=>{}), 100);
+
+            setTimeout(() => o.style.display = 'none', 2500);
+            esconderLista();
+        }
+
+        function voltarURL() {
+            v.pause();
+            v.src = '';
+            s2.style.display = 'none';
+            s3.style.display = 'none';
+            fsBtn.style.display = 'none';
+            s1.style.display = 'flex';
+            focos = [u, b1, b2];
+            fIndex = 1;
+            atualizarFoco();
+        }
+
+        // === TOUCH & GESTOS MOBILE ===
+        let lastTap = 0;
+
+        s2.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        s2.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > 80) { // swipe threshold
+                if (diff > 0) { // swipe left → próximo canal
+                    if (canalAtual < canais.length - 1) tocar(canalAtual + 1);
+                } else { // swipe right → canal anterior
+                    if (canalAtual > 0) tocar(canalAtual - 1);
+                }
+            } else {
+                // toque simples = mostrar overlay / play-pause
+                const now = Date.now();
+                if (now - lastTap < 300) {
+                    // double tap → fullscreen
+                    toggleFullscreen();
+                } else {
+                    v.paused ? v.play() : v.pause();
+                    o.style.display = 'block';
+                    setTimeout(() => o.style.display = 'none', 1500);
+                }
+                lastTap = now;
+            }
+        });
+
+        // Fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                if (s2.requestFullscreen) s2.requestFullscreen();
+                else if (s2.webkitRequestFullscreen) s2.webkitRequestFullscreen();
+                else if (s2.msRequestFullscreen) s2.msRequestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        fsBtn.addEventListener('click', toggleFullscreen);
+
+        // Eventos do vídeo
+        v.onwaiting = () => { ou.textContent = 'CARREGANDO...'; o.style.display = 'block'; };
+        v.onplaying = () => setTimeout(() => o.style.display = 'none', 800);
+        v.onerror = () => { on.textContent = 'ERRO'; ou.textContent = 'Falha ao reproduzir'; o.style.display = 'block'; };
+
+        // Botões da tela inicial
+        b1.addEventListener('click', carregar);
+        b2.addEventListener('click', () => u.value = '');
+
+        // Inicia com foco
+        atualizarFoco();
     </script>
 </body>
 </html>
